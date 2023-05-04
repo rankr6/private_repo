@@ -88,11 +88,14 @@ app.use(function (request, response, next) {
 });
 
 function AdminOfSport(request, response, next) {
-  if (request.user && request.user.isAdmin === true) {
+  const adminEmail = request.user.email;
+  const actualAdminEmail = "rankr@admin.com";
+
+  if (adminEmail == actualAdminEmail) {
     return next();
   } else {
+    response.redirect("/sportList");
     request.flash("error", "Please login with admin user id and password.");
-    response.redirect("/");
   }
 }
 
@@ -233,13 +236,18 @@ app.post("/users", async (request, response) => {
 });
 
 app.post(
-  "/sessions",validateUser,
+  "/sessions",
+  validateUser,
   passport.authenticate("local", {
     failureRedirect: "/login",
     failureFlash: true,
   }),
   (request, response) => {
-      response.redirect("/admin/createSport");    
+    if (AdminOfSport) {
+      response.redirect("/admin/createSport");
+    } else {
+      response.redirect("/sportDetail");
+    }
   }
 );
 
@@ -255,7 +263,7 @@ app.get("/signout", (request, response, next) => {
 app.get("/admin", async (request, response) => {
   const user = request.user;
   const sportName = await Sport.getSportName();
-  response.render("admin/index", {
+  response.render("login", {
     user,
     sportName,
     csrfToken: request.csrfToken(),
@@ -263,10 +271,9 @@ app.get("/admin", async (request, response) => {
 });
 
 app.get(
-  "/admin/createSport",
+  "/admin/createSport",AdminOfSport,
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-
     try {
       const sportListInfo = await Sport.getSportName();
       const userName = request.cookies.fn;
@@ -289,7 +296,7 @@ app.get(
 );
 
 app.post(
-  "/admin/createSport",
+  "/admin/createSport",AdminOfSport,
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     try {
@@ -434,10 +441,13 @@ app.get(
       const CountPlayers = splitPlayer.length;
       console.log(CountPlayers);
       //console.log(TotalPlayer);
-      if (CountPlayers < TotalPlayer) {
+      if (splitPlayer.includes(me)) {
+        request.flash("error", "You have already joined this session!");
+      } else if (CountPlayers < TotalPlayer) {
+        // Add user to session
         splitPlayer.push(me);
       } else {
-        request.flash("error", "Sorry the slot is Full! ");
+        request.flash("error", "Sorry, the session is full!");
       }
 
       //const all = ListPlayer.join(",")
