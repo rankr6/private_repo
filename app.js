@@ -246,7 +246,7 @@ app.post(
     if (AdminOfSport) {
       response.redirect("/admin/createSport");
     } else {
-      response.redirect("/login");
+      response.redirect("/sportList");
     }
   }
 );
