@@ -3,7 +3,6 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.removeColumn('SportSessions', 'SportName');
     await queryInterface.addColumn("SportSessions", "SportName", {
       type: Sequelize.DataTypes.STRING,
     });
