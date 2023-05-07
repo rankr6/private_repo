@@ -14,10 +14,16 @@ module.exports = (sequelize, DataTypes) => {
       Sport.hasMany(models.SportSession,{
         foreignKey: "sportId"
       })
+      Sport.belongsTo(models.SportSession, {
+        foreignKey: "userId",
+      });
+      // Sport.hasMany(models.SportSession,{
+      //   foreignKey: "SportName"
+      // })
     }
 
-    static async addSport({SportName,sportSessionId}){
-      return this.create({SportName:SportName,sportSessionId});
+    static async addSport({SportName,userId}){
+      return this.create({SportName:SportName,userId:userId});
     }
 
     static async getSportName(){

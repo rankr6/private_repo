@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,68 +10,79 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         var token = document
-        .querySelector('meta[name="csrf-token"]')
-        .getAttribute("content");
-        function deleteSport (id) {
-            fetch(`/createSport/${id}`,
-            {
-            method: "delete",
-            headers:{ "Content-Type" : "application/json" },
-            body: JSON.stringify({
-                "_csrf": token
-            })
-            })
-            .then((res) => {
-                if(res.ok){
-                    window.location.reload();
-                }
-            })
-            .catch((err) => console.error(err));
+            .querySelector('meta[name="csrf-token"]')
+            .getAttribute("content");
+        function deleteSport(id) {
+            fetch(`/admin/createSport/${id}`,
+                {
+                    method: "delete",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        "_csrf": token
+                    })
+                })
+                .then((res) => {
+                    if (res.ok) {
+                        window.location.reload();
+                    }
+                })
+                .catch((err) => console.error(err));
         }
-        </script>
+    </script>
     <title>Sport list</title>
 </head>
+
 <body>
     <div>
         <div class="grid grid-cols-6">
             <div class="col-start-3 col-span-2">
                 <%- include('header.ejs',{data:userName}) %>
-                <a href="/signout">Signout</a>
+                    <a href="/signout">Signout</a>
             </div>
             <div class="col-start-3 col-span-2">
-                <form action="/admin/createSport" method="post">
+                <form action="/admin/createSport/:userId" method="post">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                     <div class="flex gap-2 py-4">
                         <div class="flex-auto">
-                            <input type="text" name="SportName" placeholder="What's the name of sport?" class="border border-gray-300 leading-4 rounded text-gray-900 w-full text-sm p-2" >
+                            <input type="text" name="SportName" placeholder="What's the name of sport?"
+                                class="border border-gray-300 leading-4 rounded text-gray-900 w-full text-sm p-2">
                         </div>
                         <div>
-                            <button type="submit" class="bg-green-600 px-5 py-1.5 mr-2 font-medium text-white rounded">Add</button>
+                            <button type="submit"
+                                class="bg-green-600 px-5 py-1.5 mr-2 font-medium text-white rounded">Add</button>
                         </div>
                     </div>
                 </form>
                 <div>
                     <%- include('sportListBase.ejs',{title:"Sport List Information",data:sportListInfo}) %>
                 </div>
+                <div class="h-full max-h-full flex flex-col items-center content-center p-20 ">
+                    <div class="text-black font-bold px-6 py-9 bg-gray-300 rounded-md shadow-2xl">
+                        <a href="/viewReport" class="text-red">View Report</a>
+                    </div>
+                </div>
             </div>
-            <% if(messages && messages.error && messages.error.length > 0)  { %>
+            <% if(messages && messages.error && messages.error.length> 0) { %>
                 <% for(var i=0; i<messages.error.length; i++) { %>
-                  <p class="bg-red-100 border border-gray-300 p-2 font-medium rounded text-red-900 px-4 py-2"><%= messages.error[i] %></p>
-                <% } %>
-              <% } %>
-            <div class="col-start-3 col-span-2">
-             
-            </div>
+                    <p class="bg-red-100 border border-gray-300 p-2 font-medium rounded text-red-900 px-4 py-2">
+                        <%= messages.error[i] %>
+                    </p>
+                    <% } %>
+                        <% } %>
+                            <div class="col-start-3 col-span-2">
+
+                            </div>
         </div>
     </div>
     <script>
-        let spid= document.querySelectorAll(".SportId")
-     spid.forEach(element =>     {
-         element.addEventListener("click",(e)=>{
-             console.log(e.target.id);
-             window.location.href = `/sessionCreate/${e.target.id}`
-         })
+        let spid = document.querySelectorAll(".SportId")
+        spid.forEach(element => {
+            element.addEventListener("click", (e) => {
+                console.log(e.target.id);
+                window.location.href = `/sessionCreate/${e.target.id}/${e.target.userId}/${e.target.SportName}`
+            })
         });
-     </script>
+    </script>
 </body>
+
 </html>

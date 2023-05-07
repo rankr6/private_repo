@@ -38,6 +38,8 @@
                 <a href="/signout">Signout</a>
                 <%- include('sportListBase.ejs',{title:"Sport List Information",data:sportListInfo}) %>
             </div>
+            <div>
+            </div>
             <% if(messages && messages.error && messages.error.length > 0)  { %>
                 <% for(var i=0; i<messages.error.length; i++) { %>
                   <p class="bg-red-100 border border-gray-300 p-2 font-medium rounded text-red-900 px-4 py-2"><%= messages.error[i] %></p>
@@ -54,7 +56,7 @@
 spid.forEach(element =>     {
     element.addEventListener("click",(e)=>{
         console.log(e.target.id);
-        window.location.href = `/sessionCreate/${e.target.id}`
+        window.location.href = `/sessionCreate/${e.target.id}/${e.target.userId}/${e.target.SportName}`
     })
    });
 </script>

@@ -13,11 +13,13 @@ const passport = require("passport");
 const connectEnsureLogin = require("connect-ensure-login");
 const session = require("express-session");
 const LocalStrategy = require("passport-local");
-const { error, count } = require("console");
+const { error, count, time } = require("console");
 const flash = require("connect-flash");
 const bcrypt = require("bcrypt");
 const { request } = require("http");
 const { log } = require("util");
+const Sequelize = require("sequelize");
+const { Op } = require("sequelize");
 //const { next } = require("cheerio/lib/api/traversing");
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
@@ -228,7 +230,7 @@ app.post("/users", async (request, response) => {
       if (error) {
         console.log(error);
       }
-      response.redirect("/admin/createSport");
+      response.redirect("/login");
     });
   } catch (error) {
     console.log(error);
@@ -236,15 +238,16 @@ app.post("/users", async (request, response) => {
 });
 
 app.post(
-  "/sessions",
+  "/session",
   validateUser,
   passport.authenticate("local", {
     failureRedirect: "/login",
     failureFlash: true,
   }),
   (request, response) => {
+    const userId = request.user.id;
     if (AdminOfSport) {
-      response.redirect("/admin/createSport");
+      response.redirect("/admin/createSport/" + userId);
     } else {
       response.redirect("/sportList");
     }
@@ -271,7 +274,8 @@ app.get("/admin", async (request, response) => {
 });
 
 app.get(
-  "/admin/createSport",AdminOfSport,
+  "/admin/createSport/:userId",
+  AdminOfSport,
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     try {
@@ -279,7 +283,7 @@ app.get(
       const userName = request.cookies.fn;
       console.log(sportListInfo);
       if (request.accepts("html")) {
-        response.render("admin/createSport", {
+        return response.render("admin/createSport", {
           sportListInfo,
           userName,
           csrfToken: request.csrfToken(),
@@ -296,12 +300,21 @@ app.get(
 );
 
 app.post(
-  "/admin/createSport",AdminOfSport,
+  "/admin/createSport/:userId",
   connectEnsureLogin.ensureLoggedIn(),
+  AdminOfSport,
   async (request, response) => {
     try {
+      const userId = request.user.id;
+      console.log(userId);
       const sport = await Sport.addSport({
         SportName: request.body.SportName,
+        userId: userId,
+      });
+      response.cookie(`sn`, sport.SportName, {
+        maxAge: 500 * 60 * 60 * 1000,
+        secure: true,
+        httpOnly: true,
       });
       request.flash("success", "Sport has been created successfully!");
       response.redirect("/SportList");
@@ -327,36 +340,70 @@ app.delete(
 );
 
 app.get(
-  "/sessionCreate/:id",
-  connectEnsureLogin.ensureLoggedIn(),
-  async function (request, response) {
-    const sportDetail = await Sport.perticulerSport(request.params.id);
-    const userName = request.cookies.fn;
-    response.render("sessionCreate", {
-      userName,
-      sportDetail,
-      csrfToken: request.csrfToken(),
-    });
-  }
-);
-
-app.get(
   "/sportDetail/:id",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     try {
+      const userId = request.user.id;
+      const sportId = request.params.id;
+      console.log("Id");
+      console.log(userId);
       const sportDetail = await Sport.perticulerSport(request.params.id);
       const sportsession = await SportSession.getSessionDetail(
         request.params.id
       );
+
+      const rowsOfPlayerJoinedId = await SportSession.findAll({
+        where: {
+          playerId: {
+            [Op.contains]: [userId],
+          },
+          sportId,
+        },
+      });
+
+      const NotrowsOfPlayerJoinedId = await SportSession.findAll({
+        where: {
+          // player: {
+          //   [Op.not]: [request.cookies.fn],
+          // },
+          [Op.not]: {
+            playerId: {
+              [Op.contains]: [userId],
+            },
+          },
+          sportId,
+        },
+      });
+
+      const saperateCreatedSession = await SportSession.findAll({
+        where: {
+          userId: {
+            [Op.eq]: [userId],
+          },
+          sportId,
+        },
+      });
+
+      console.log("rank");
+      console.log(rowsOfPlayerJoinedId);
+      console.log("hello");
+      console.log(NotrowsOfPlayerJoinedId);
+      // const sportSession = await SportSession.findOne({
+      //   where: { id: request.params.id },
+      // });
+      //const isJoined = sportSession;
+      //console.log(isJoined);
       const userName = request.cookies.fn;
       //console.log(sportDetail);
-      console.log(sportsession);
+      //console.log(sportsession);
 
       response.render("sportDetail", {
         userName,
         sportDetail,
-        sportsession,
+        rowsOfPlayerJoinedId,
+        NotrowsOfPlayerJoinedId,
+        saperateCreatedSession,
         csrfToken: request.csrfToken(),
       });
     } catch (err) {
@@ -365,11 +412,37 @@ app.get(
   }
 );
 
+app.get(
+  "/sessionCreate/:id/:userId/:SportName",
+  connectEnsureLogin.ensureLoggedIn(),
+  async function (request, response) {
+    const userId = request.user.id;
+    const sportDetail = await Sport.perticulerSport(request.params.id);
+    const userName = request.cookies.fn;
+    response.render("sessionCreate", {
+      userName,
+      sportDetail,
+      userId,
+      csrfToken: request.csrfToken(),
+    });
+  }
+);
+
 app.post(
-  "/sessionCreate/:id",
+  "/sessionCreate/:id/:userId/:SportName",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     let sportId = request.params.id;
+    let userId = request.user.id;
+    let playerId = new Array();
+    const sports = await Sport.findOne({
+      where: {
+        id: request.params.id,
+      },
+    });
+    console.log(sports);
+    console.log(sports.SportName);
+    // let sport_name =
     try {
       const sportsession = await SportSession.addSession({
         date: request.body.date,
@@ -377,7 +450,11 @@ app.post(
         place: request.body.place,
         player: request.body.player,
         TotalPlayer: request.body.TotalPlayer,
+        SportName: sports.SportName,
         sportId: sportId,
+        userId: userId,
+        playerId,
+        isJoined: false,
       });
       response.cookie(`tp`, sportsession.TotalPlayer, {
         maxAge: 500 * 60 * 60 * 1000,
@@ -395,10 +472,11 @@ app.post(
 );
 
 app.delete(
-  "/sportDetail/:id",
+  "/sportDetail/:id/:userId",
   connectEnsureLogin.ensureLoggedIn(),
   async function (request, response) {
     console.log("We have to delete a Sport with ID: ", request.params.id);
+    console.log(request.params.userId);
     try {
       await SportSession.remove(request.params.id);
       return response.json({ success: true });
@@ -427,6 +505,7 @@ app.get(
       console.log("We have to add player in session id : ", request.params.id);
       const sessionId = request.params.sid;
       const sportId = request.params.id;
+      const userId = request.user.id;
       const me = request.cookies.fn;
       const players = await SportSession.findOne({
         where: {
@@ -434,18 +513,40 @@ app.get(
           sportId: sportId,
         },
       });
+      console.log(players);
       const TotalPlayer = request.cookies.tp;
       console.log(TotalPlayer);
       const ListPlayer = players.player;
+      const playerIdList = players.playerId;
+      console.log(players);
+      console.log(playerIdList);
       const splitPlayer = ListPlayer.split(",");
       const CountPlayers = splitPlayer.length;
       console.log(CountPlayers);
+      const date = new Date().toISOString();
+
       //console.log(TotalPlayer);
       if (splitPlayer.includes(me)) {
         request.flash("error", "You have already joined this session!");
+      } else if (players.date < date) {
+        request.flash("error", "You can not join past Session");
       } else if (CountPlayers < TotalPlayer) {
         // Add user to session
         splitPlayer.push(me);
+        playerIdList.push(userId);
+        // const updatedPlayerId = Sequelize.literal(`array_append(playerId, ${userId})`);
+        // console.log(updatedPlayerId);
+        console.log(playerIdList);
+        await SportSession.update(
+          {
+            playerId: playerIdList,
+          },
+          {
+            where: { id: sessionId },
+          }
+        );
+
+        request.flash("error", "You have Success fully joined the session.");
       } else {
         request.flash("error", "Sorry, the session is full!");
       }
@@ -461,11 +562,7 @@ app.get(
       const sportsession = await SportSession.getSessionDetail(
         request.params.id
       );
-      response.render("sportDetail", {
-        sportDetail,
-        sportsession,
-        csrfToken: request.csrfToken(),
-      });
+      response.redirect("/sportDetail/" + sportId);
       //  console.log(findSession.SportSession[0].dataValues.player);
 
       //console.log(findSession.player);
@@ -504,5 +601,122 @@ app.get(
     }
   }
 );
+
+app.get(
+  "/sportDetail/:id/leaveSession/:sid",
+  connectEnsureLogin.ensureLoggedIn(),
+  async function (request, response) {
+    try {
+      console.log(
+        "We have to remove a player in session id : ",
+        request.params.id
+      );
+      const sessionId = request.params.sid;
+      const sportId = request.params.id;
+      const me = request.cookies.fn;
+      const userId = request.user.id;
+      const players = await SportSession.findOne({
+        where: {
+          id: sessionId,
+          sportId: sportId,
+        },
+      });
+      const TotalPlayer = request.cookies.tp;
+      console.log(TotalPlayer);
+      const ListPlayer = players.player;
+      const playerIdList = players.playerId;
+      const indexPlayerId = playerIdList.indexOf(userId);
+
+      console.log(playerIdList);
+      const splitPlayer = ListPlayer.split(",");
+      const CountPlayers = splitPlayer.length;
+      console.log(CountPlayers);
+      const indexOfme = splitPlayer.indexOf(me);
+      console.log(indexPlayerId);
+
+      if (splitPlayer.includes(me)) {
+        splitPlayer.splice(indexOfme, 1);
+        playerIdList.splice(indexPlayerId, 1);
+      } else {
+        request.flash("error", "Sorry, You are not in the session!");
+      }
+      console.log(playerIdList);
+      //const all = ListPlayer.join(",")
+      //console.log(splitPlayer);
+      let arrToString = splitPlayer.toString();
+      await SportSession.updatePlayer({
+        player: arrToString,
+        id: sessionId,
+      });
+
+      await SportSession.updatePlayerId({
+        playerId: playerIdList,
+        id: sessionId,
+      });
+      const sportDetail = await Sport.perticulerSport(request.params.id);
+      const sportsession = await SportSession.getSessionDetail(
+        request.params.id
+      );
+      response.redirect("/sportDetail/" + sportId);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+);
+
+app.get(
+  "/viewReport",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    try {
+      const countSport = await Sport.count();
+      const getSportByName = await Sport.findAll();
+      const getAllSessionDetails = await SportSession.findAll();
+      return response.render("viewReport", {
+        csrfToken: request.csrfToken(),
+        countSport,
+        getSportByName,
+        getAllSessionDetails,
+      });
+    } catch (error) {
+      console.log(error);
+      return response.status(422).json(error);
+    }
+  }
+);
+
+app.get("/playerJoinedSession/:id", async (request, response) => {
+  try {
+    const userId = request.user.id;
+    const rowsOfPlayerId = await SportSession.findAll({
+      where: {
+        playerId: {
+          [Op.contains]: [userId],
+        },
+      },
+    });
+    console.log(rowsOfPlayerId);
+    return response.render("playerJoinedSession", {
+      rowsOfPlayerId,
+      userId,
+    });
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+
+// app.get("/playerjoinedSession/:id", async (request, response) => {
+//   try {
+//     const sportId = request.params.id;
+//     const userId = request.user.id;
+//     const sports = await Sport.findAll({ where: { userId } });
+//     const sessions = await SportSession.findAll();
+//     console.log(sessions);
+//     response.render("playerSessions", { sessions, sports });
+//   } catch (error) {
+//     console.log(error);
+//   }
+// });
 
 module.exports = app;

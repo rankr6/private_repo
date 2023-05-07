@@ -537,7 +537,7 @@
                             <%= data.length %>
                         </span>
                         <ul class="list none">
-                                <p>Available Session</p>
+                                <p>Joined Session</p>
                                 <% for(var i=0; i< data.length;i++) { %>
                                     <li class="Todo-Item">
                                         <div class="flex w-fit my-2 px-2 py-1 items-center hover:bg-purple-50">
@@ -570,10 +570,11 @@
                                                 </svg>
                                             </a>
                                         </div>
-                                        <br><a class="joinedSession"
-                                            href="/sportDetail/<%= data[i].sportId %>/joinSession/<%= data[i].id %>"
-                                            onclick="joinSession(<%= data[i].sportId%>)">Join Session</a>
-
+                                        <br><a class="playerLeavedSession"
+                                            href="/sportDetail/<%= data[i].sportId %>/leaveSession/<%= data[i].id %>"
+                                            onclick="leaveSession(<%= data[i].sportId%>)">Leave Session</a>
+                                        <div class="h-full max-h-full flex flex-col items-center content-center p-20 ">
+                                        </div>
                                     </li>
                                     <% } %>
                         </ul>

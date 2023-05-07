@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.addColumn('Users','IsAdmin',{
+    await queryInterface.addColumn("SportSessions","isJoined",{
       type: Sequelize.BOOLEAN,
     })
     /**
@@ -15,7 +15,6 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.removeColumn('Users','IsAdmin');
     /**
      * Add reverting commands here.
      *
