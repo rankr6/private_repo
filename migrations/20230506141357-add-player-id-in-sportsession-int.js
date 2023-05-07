@@ -3,7 +3,6 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.removeColumn('SportSessions', 'playerId');
     await queryInterface.addColumn('SportSessions', 'playerId', {
       type: Sequelize.ARRAY(Sequelize.INTEGER)
     });
