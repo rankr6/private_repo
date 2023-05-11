@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
       SportSession.belongsTo(models.User, {
         foreignKey: "userId",
       });
+      SportSession.hasMany(models.cancelSession,{
+        foreignKey:"sessionId",
+      })
+      
       // SportSession.belongsTo(models.Sport, {
       //   foreignKey: "SportName",
       // });
@@ -30,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       userId,
       playerId,
       SportName,
-      isJoined
+      isCanceled
     }) {
       return this.create({
         date,
@@ -42,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
         userId,
         playerId,
         SportName,
-        isJoined,
+        isCanceled,
       });
     }
 
@@ -54,10 +58,11 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    static async remove(id) {
+    static async remove(id,userId) {
       return this.destroy({
         where: {
           id,
+          userId,
         },
       });
     }
@@ -100,7 +105,7 @@ module.exports = (sequelize, DataTypes) => {
       TotalPlayer: DataTypes.INTEGER,
       playerId: DataTypes.ARRAY(DataTypes.INTEGER),
       SportName: DataTypes.STRING,
-      isJoined: DataTypes.BOOLEAN,
+      isCanceled: DataTypes.BOOLEAN,
     },
     {
       sequelize,

@@ -4,7 +4,7 @@ const express = require("express");
 const app = express();
 var csrf = require("csurf");
 var cookieParser = require("cookie-parser");
-const { User, Sport, SportSession } = require("./models");
+const { User, Sport, SportSession, cancelSession } = require("./models");
 const bodyParser = require("body-parser");
 const { where } = require("sequelize");
 const path = require("path");
@@ -316,8 +316,8 @@ app.post(
         secure: true,
         httpOnly: true,
       });
-      request.flash("success", "Sport has been created successfully!");
       response.redirect("/SportList");
+      request.flash("success", "Sport has been created successfully!");
     } catch (err) {
       console.log(err);
     }
@@ -359,6 +359,7 @@ app.get(
             [Op.contains]: [userId],
           },
           sportId,
+          isCanceled: false,
         },
       });
 
@@ -373,6 +374,7 @@ app.get(
             },
           },
           sportId,
+          isCanceled: false,
         },
       });
 
@@ -382,6 +384,17 @@ app.get(
             [Op.eq]: [userId],
           },
           sportId,
+          isCanceled: false,
+        },
+      });
+
+      const canceledSession = await SportSession.findAll({
+        where: {
+          playerId: {
+            [Op.contains]: [userId],
+          },
+          sportId,
+          isCanceled: true,
         },
       });
 
@@ -404,6 +417,7 @@ app.get(
         rowsOfPlayerJoinedId,
         NotrowsOfPlayerJoinedId,
         saperateCreatedSession,
+        canceledSession,
         csrfToken: request.csrfToken(),
       });
     } catch (err) {
@@ -454,7 +468,7 @@ app.post(
         sportId: sportId,
         userId: userId,
         playerId,
-        isJoined: false,
+        isCanceled: false,
       });
       response.cookie(`tp`, sportsession.TotalPlayer, {
         maxAge: 500 * 60 * 60 * 1000,
@@ -478,7 +492,7 @@ app.delete(
     console.log("We have to delete a Sport with ID: ", request.params.id);
     console.log(request.params.userId);
     try {
-      await SportSession.remove(request.params.id);
+      await SportSession.remove(request.params.id, request.user.id);
       return response.json({ success: true });
     } catch (error) {
       console.log(error);
@@ -700,6 +714,64 @@ app.get("/playerJoinedSession/:id", async (request, response) => {
       rowsOfPlayerId,
       userId,
     });
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+
+app.get("/cancelSession/:sportId/:sessionId", async (request, response) => {
+  try {
+    const sportId = request.params.sportId;
+    const sessionId = request.params.sessionId;
+    const sportCancel = await cancelSession.findOne({
+      where:{
+        sessionId:sessionId,
+        sportId:sportId,
+      }
+    })
+    return response.render("cancelSession",{
+      sportCancel,
+      sportId,
+      sessionId,
+      csrfToken: request.csrfToken(),
+    });
+    // await SportSession.update(
+    //   {
+    //     isCanceled: true,
+    //   },
+    //   {
+    //     where: {
+    //       id: sessionId,
+    //     },
+    //   }
+    // );
+  } catch (error) {
+    console.log(error);
+    return response.status(422).json(error);
+  }
+});
+
+app.post("/cancelSession/:sportId/:sessionId", async (request, response) => {
+  try {
+    const sportId = request.params.sportId;
+    const sessionId = request.params.sessionId;
+    const sportCancel = await cancelSession.addReason({
+      reason: request.body.reason,
+      sessionId: sessionId,
+    });
+
+    await SportSession.update(
+      {
+        isCanceled: true,
+      },
+      {
+        where: {
+          id: sessionId,
+        },
+      }
+    );
+    response.redirect("/sportDetail/" + sportId);
   } catch (error) {
     console.log(error);
     return response.status(422).json(error);
