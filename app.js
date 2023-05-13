@@ -352,6 +352,8 @@ app.get(
       const sportsession = await SportSession.getSessionDetail(
         request.params.id
       );
+      // console.log("Session ID:");
+      // console.log(request.params.id);
 
       const rowsOfPlayerJoinedId = await SportSession.findAll({
         where: {
@@ -469,6 +471,7 @@ app.post(
         userId: userId,
         playerId,
         isCanceled: false,
+        reason:null,
       });
       response.cookie(`tp`, sportsession.TotalPlayer, {
         maxAge: 500 * 60 * 60 * 1000,
@@ -725,12 +728,12 @@ app.get("/cancelSession/:sportId/:sessionId", async (request, response) => {
     const sportId = request.params.sportId;
     const sessionId = request.params.sessionId;
     const sportCancel = await cancelSession.findOne({
-      where:{
-        sessionId:sessionId,
-        sportId:sportId,
-      }
-    })
-    return response.render("cancelSession",{
+      where: {
+        sessionId: sessionId,
+        sportId: sportId,
+      },
+    });
+    return response.render("cancelSession", {
       sportCancel,
       sportId,
       sessionId,
@@ -759,11 +762,19 @@ app.post("/cancelSession/:sportId/:sessionId", async (request, response) => {
     const sportCancel = await cancelSession.addReason({
       reason: request.body.reason,
       sessionId: sessionId,
+      sportId:sportId,
     });
-
+    console.log(sportCancel.reason);
+    const findReason = await cancelSession.findOne({
+      where:{
+        sessionId,
+      }
+    })
+    console.log(findReason.reason);
     await SportSession.update(
       {
         isCanceled: true,
+        reason: findReason.reason,
       },
       {
         where: {
@@ -771,6 +782,16 @@ app.post("/cancelSession/:sportId/:sessionId", async (request, response) => {
         },
       }
     );
+    // await SportSession.update(
+    //   {
+    //   },
+    //   {
+    //     where: {
+    //       id: sessionId,
+    //     },
+    //   }
+    // );
+    
     response.redirect("/sportDetail/" + sportId);
   } catch (error) {
     console.log(error);

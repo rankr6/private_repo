@@ -14,11 +14,15 @@ module.exports = (sequelize, DataTypes) => {
       cancelSession.belongsTo(models.SportSession,{
         foreignKey:"sessionId",
       })
+      cancelSession.belongsTo(models.Sport,{
+        foreignKey:"sportId",
+      })
+      
       
     }
 
-    static async addReason({reason,sessionId}){
-      return this.create({reason:reason,sessionId:sessionId});
+    static async addReason({reason,sessionId,sportId}){
+      return this.create({reason:reason,sessionId:sessionId,sportId});
     }
 
 

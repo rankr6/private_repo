@@ -34,7 +34,8 @@ module.exports = (sequelize, DataTypes) => {
       userId,
       playerId,
       SportName,
-      isCanceled
+      isCanceled,
+      reason,
     }) {
       return this.create({
         date,
@@ -47,6 +48,7 @@ module.exports = (sequelize, DataTypes) => {
         playerId,
         SportName,
         isCanceled,
+        reason,
       });
     }
 
@@ -106,6 +108,7 @@ module.exports = (sequelize, DataTypes) => {
       playerId: DataTypes.ARRAY(DataTypes.INTEGER),
       SportName: DataTypes.STRING,
       isCanceled: DataTypes.BOOLEAN,
+      reason: DataTypes.STRING,
     },
     {
       sequelize,

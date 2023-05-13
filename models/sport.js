@@ -14,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       Sport.hasMany(models.SportSession,{
         foreignKey: "sportId"
       })
+      Sport.hasMany(models.cancelSession,{
+        foreignKey: "sportId"
+      })
       Sport.belongsTo(models.SportSession, {
         foreignKey: "userId",
       });
