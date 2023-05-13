@@ -167,8 +167,8 @@
                     <% } %>
                         <% } %>
                 <%- include('header.ejs',{data:userName}) %>
-                    <a href="/signout">Signout</a>
-                    
+                    <a href="/signout">Signout</a><br>
+                    <a href="/resetPassword/<%=userId%>">Reset Password</a>
             </div>
             <div class="col-start-3 col-span-2">
                 <form action="/admin/createSport/:userId" method="post">

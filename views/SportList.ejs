@@ -47,7 +47,8 @@
                         <% } %>
                             <% } %>
                 <%- include('header.ejs',{data:userName}) %>
-                <a href="/signout">Signout</a>
+                <a href="/signout">Signout</a><br>
+                <a href="/resetPassword/<%=userId%>">Reset Password</a>
                 <%- include('sportListBase.ejs',{title:"Sport List Information",data:sportListInfo}) %>
             </div>
             <div>

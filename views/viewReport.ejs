@@ -156,8 +156,68 @@
             <% } ) %><br>
     </div>
     <div>
-        <h1>Sessions</h1>
+        <h1>Upcoming Sessions</h1>
         <% getAllSessionDetails.forEach(function(user) { %>
+            <p><span class="text-black">Sport Name: </span>
+                <%=user.SportName%>
+            </p>
+            <p><span class="text-black">Session Id: </span>
+                <%=user.id%>
+            </p>
+            <p><span class="text-black">Session Date: </span>
+                <%=user.date%>
+            </p>
+            <p><span class="text-black">Session Time: </span>
+                <%=user.time%>
+            </p>
+            <p><span class="text-black">Session Place: </span>
+                <%=user.place%>
+            </p>
+            <p><span class="text-black">Participants: </span>
+                <%=user.player%>
+            </p>
+            <p><span class="text-black">Total Participants: </span>
+                <%=user.TotalPlayer%>
+            </p>
+            <p><span class="text-black">Sport Id: </span>
+                <%=user.sportId%>
+            </p><br>
+            <br>
+            <% } ) %><br>
+    </div>
+    <div>
+        <h1>Ongoing Sessions</h1>
+        <% getAllTodaySessionDetails.forEach(function(user) { %>
+            <p><span class="text-black">Sport Name: </span>
+                <%=user.SportName%>
+            </p>
+            <p><span class="text-black">Session Id: </span>
+                <%=user.id%>
+            </p>
+            <p><span class="text-black">Session Date: </span>
+                <%=user.date%>
+            </p>
+            <p><span class="text-black">Session Time: </span>
+                <%=user.time%>
+            </p>
+            <p><span class="text-black">Session Place: </span>
+                <%=user.place%>
+            </p>
+            <p><span class="text-black">Participants: </span>
+                <%=user.player%>
+            </p>
+            <p><span class="text-black">Total Participants: </span>
+                <%=user.TotalPlayer%>
+            </p>
+            <p><span class="text-black">Sport Id: </span>
+                <%=user.sportId%>
+            </p><br>
+            <br>
+            <% } ) %><br>
+    </div>
+    <div>
+        <h1>Played Sessions</h1>
+        <% getAllPreviousSessionDetails.forEach(function(user) { %>
             <p><span class="text-black">Sport Name: </span>
                 <%=user.SportName%>
             </p>
