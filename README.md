@@ -1,10 +1,10 @@
-# Sport Scheduler
+# Rank's Sport Scheduler
 
 Link - https://rank-s-sport-scheduler-kb8s.onrender.com
 
-Admin Credentials
-Email - rankr@admin.com
-Password - admin@admin
+# Admin Credentials
+### Email - rankr@admin.com
+### Password - admin@admin
 
 ## Description
 
