@@ -230,6 +230,7 @@ app.post("/users", async (request, response) => {
       if (error) {
         console.log(error);
       }
+      request.flash("success","You have signed up successfully.")
       response.redirect("/login");
     });
   } catch (error) {
@@ -246,6 +247,7 @@ app.post(
   }),
   (request, response) => {
     const userId = request.user.id;
+    request.flash("success","You have logged in successfully.")
     if (AdminOfSport) {
       response.redirect("/admin/createSport/" + userId);
     } else {
@@ -259,6 +261,7 @@ app.get("/signout", (request, response, next) => {
     if (error) {
       return next(error);
     }
+    request.flash("success","You have successfully sign out.")
     response.redirect("/");
   });
 });
@@ -316,8 +319,8 @@ app.post(
         secure: true,
         httpOnly: true,
       });
-      response.redirect("/SportList");
       request.flash("success", "Sport has been created successfully!");
+      response.redirect("/SportList");
     } catch (err) {
       console.log(err);
     }
@@ -331,6 +334,7 @@ app.delete(
     console.log("We have to delete a Sport with ID: ", request.params.id);
     try {
       await Sport.remove(request.params.id);
+      request.flash("success","You have deleted a sport.")
       return response.json({ success: true });
     } catch (error) {
       console.log(error);
@@ -544,7 +548,7 @@ app.get(
 
       //console.log(TotalPlayer);
       if (splitPlayer.includes(me)) {
-        request.flash("error", "You have already joined this session!");
+        request.flash("success", "You have already joined this session!");
       } else if (players.date < date) {
         request.flash("error", "You can not join past Session");
       } else if (CountPlayers < TotalPlayer) {
@@ -563,7 +567,7 @@ app.get(
           }
         );
 
-        request.flash("error", "You have Success fully joined the session.");
+        request.flash("success", "You have Success fully joined the session.");
       } else {
         request.flash("error", "Sorry, the session is full!");
       }
@@ -654,6 +658,7 @@ app.get(
       if (splitPlayer.includes(me)) {
         splitPlayer.splice(indexOfme, 1);
         playerIdList.splice(indexPlayerId, 1);
+        request.flash("success", "You have Successfully leaved the session.");
       } else {
         request.flash("error", "Sorry, You are not in the session!");
       }
@@ -791,7 +796,7 @@ app.post("/cancelSession/:sportId/:sessionId", async (request, response) => {
     //     },
     //   }
     // );
-    
+    request.flash("success", "You have Success fully deleted the session.");
     response.redirect("/sportDetail/" + sportId);
   } catch (error) {
     console.log(error);

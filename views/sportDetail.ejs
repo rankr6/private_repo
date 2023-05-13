@@ -50,6 +50,18 @@
 </head>
 
 <body>
+    <% if(messages && messages.success && messages.success.length > 0)  { %>
+        <% for(var i=0; i<messages.success.length; i++) { %>
+          <p class="bg-green-100 border border-gray-300 p-2 font-medium rounded text-green-900 px-4 py-2"><%= messages.success[i] %></p>
+        <% } %>
+      <% } %>
+      <% if(messages && messages.error && messages.error.length> 0) { %>
+        <% for(var i=0; i<messages.error.length; i++) { %>
+            <p class="bg-green-100 border border-gray-300 p-2 font-medium rounded text-red-900 px-4 py-2">
+                <%= messages.error[i] %>
+            </p>
+            <% } %>
+                <% } %>
     <div>
         <%- include('SportSessionBase.ejs',{title:"Sport Session Information",data:NotrowsOfPlayerJoinedId}) %>
         <%- include('joinedSessionSaperateList.ejs',{title:"Sport Session Information",data:rowsOfPlayerJoinedId}) %>

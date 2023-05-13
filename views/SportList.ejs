@@ -34,17 +34,25 @@
     <div>
         <div class="grid grid-cols-6">
             <div class="col-start-3 col-span-2">
+                <% if(messages && messages.success && messages.success.length > 0)  { %>
+                    <% for(var i=0; i<messages.success.length; i++) { %>
+                      <p class="bg-green-100 border border-gray-300 p-2 font-medium rounded text-green-900 px-4 py-2"><%= messages.success[i] %></p>
+                    <% } %>
+                  <% } %>
+                  <% if(messages && messages.error && messages.error.length> 0) { %>
+                    <% for(var i=0; i<messages.error.length; i++) { %>
+                        <p class="bg-green-100 border border-gray-300 p-2 font-medium rounded text-red-900 px-4 py-2">
+                            <%= messages.error[i] %>
+                        </p>
+                        <% } %>
+                            <% } %>
                 <%- include('header.ejs',{data:userName}) %>
                 <a href="/signout">Signout</a>
                 <%- include('sportListBase.ejs',{title:"Sport List Information",data:sportListInfo}) %>
             </div>
             <div>
             </div>
-            <% if(messages && messages.error && messages.error.length > 0)  { %>
-                <% for(var i=0; i<messages.error.length; i++) { %>
-                  <p class="bg-red-100 border border-gray-300 p-2 font-medium rounded text-red-900 px-4 py-2"><%= messages.error[i] %></p>
-                <% } %>
-              <% } %>
+            
             <div class="col-start-3 col-span-2">
                 <%- include('footer.ejs') %>
             </div>
